@@ -1,8 +1,10 @@
 <link rel="stylesheet" type="text/css" href="__STATIC__/css/base.css"/>
 <link rel="shortcut icon" type="image/x-icon" href="{$tpshop_config.shop_info_store_ico|default='/public/static/images/logo/storeico_default.png'}" media="screen"/>
 <div class="tpshop-tm-hander">
+
 	<div class="top-hander">
 		<div class="sendaddress pr fl" style="margin-left: 19%">
+			<!--L_C-->
 			<table>
 				<tr>
 					<td>
@@ -40,9 +42,8 @@
 					</td>
 				</tr>
 			</table>
-
 		</div>
-
+		<!--L_C-->
 
 
 		<div class="[w] pr clearfix">
@@ -199,37 +200,27 @@
 				<div class="cata-nav" id="cata-nav">
 				<volist name="goods_category_tree" id="v" key="kr">
 					<div class="item">
-						<if condition="$v[level] eq 1">
+						<if condition="$v['level'] eq 1">
 						<div class="item-left">
 							<h3 class="cata-nav-name">
 								<div class="cata-nav-wrap">
 									<i class="ico ico-nav-{$kr-1}"></i>
-									<a href="{:url('Home/Goods/goodsList',array('id'=>$v[id]))}" title="{$v[name]}">{$v[mobile_name]}</a>
+									<a href="{:url('Home/Goods/goodsList',array('id'=>$v['id']))}" title="{$v['name']}">{$v['mobile_name']}</a>
 								</div>
-								<!--<a href="" >手机店</a>-->
 							</h3>
 						</div>
 						</if>
 						<div class="cata-nav-layer">
 							<div class="cata-nav-left">
-								 <!-- 如果没有热门分类就隐藏 --> 
-								 <if condition="count($v.hot_cate) lt 1">
-								 </if>
-								<div class="cata-layer-title" <if condition="count($v.hot_cate) eq 0">style="display:none"</if>>
-									<foreach name="v.hot_cate" item="hc">
-									<a class="layer-title-item" href="{:url('Home/Goods/goodsList',['id'=>$hc.id])}">{$hc.name}<i class="ico ico-arrow-right">></i></a>
-									</foreach>
-								</div>
-							 
 								<div class="subitems">
 									<foreach name="v['tmenu']" key="k2" item='v2'>
-									<if condition="$v2[parent_id] eq $v['id']">
+									<if condition="$v2['parent_id'] eq $v['id']">
 										<dl class="clearfix">
-											<dt><a href="{:url('Home/Goods/goodsList',array('id'=>$v2[id]))}" target="_blank">{$v2[name]}</a></dt>
+											<dt><a href="{:url('Home/Goods/goodsList',array('id'=>$v2['id']))}" target="_blank">{$v2['name']}</a></dt>
 											<dd class="clearfix">
 												<foreach name="v2['sub_menu']" key="k3" item='v3'>
-													<if condition="$v3[parent_id] eq $v2['id']">
-													<a href="{:url('Home/Goods/goodsList',array('id'=>$v3[id]))}" target="_blank">{$v3[name]}</a>
+													<if condition="$v3['parent_id'] eq $v2['id']">
+													<a href="{:url('Home/Goods/goodsList',array('id'=>$v3['id']))}" target="_blank">{$v3['name']}</a>
 													</if>
 												</foreach>
 											</dd>
@@ -238,21 +229,24 @@
 									</foreach>
 								</div>
 							</div>
+
+
+							<!--分类广告-->
 							<div class="advertisement_down">
 								<adv pid="10+$kr" item="v3" limit="5">
-								<a href="{$v3[ad_link]}" <if condition="$v3['target'] eq 1">target="_blank"</if>>
-									<img class="w-100" src="{$v3[ad_code]}" title="{$v3[title]}"/>
+								<a href="{$v3['ad_link']}" <if condition="$v3['target'] eq 1">target="_blank"</if>>
+									<img class="w-100" src="{$v3['ad_code']}" title="{$v3['title']}"/>
 								</a>
 								</adv>
 							</div>
 							<adv item="az" pid="51" limit="1">
-							<a href="{$az[ad_link]}" class="cata-nav-rigth" <if condition="$az['target'] eq 1">target="_blank"</if>>
-								<img class="w-100" src="{$az[ad_code]}" title="{$az[title]}" />
+							<a href="{$az['ad_link']}" class="cata-nav-rigth" <if condition="$az['target'] eq 1">target="_blank"</if>>
+								<img class="w-100" src="{$az['ad_code']}" title="{$az['title']}" />
 							</a>
 							</adv>
-						</div>
+							</div>
 					</div>
-					</volist>					
+				</volist>
 				</div>
 				<script>
 					$('#cata-nav').find('.item').hover(function () {
@@ -264,13 +258,19 @@
 			</div>
 			<!--全部商品分类-e-->
 		</div>
+
 		<ul class="navitems clearfix" id="navitems">
-			<li <if condition=" CONTROLLER_NAME eq 'Index' ">class="selected"</if>><a href="{:url('Index/index')}">首页</a></li>
-			<!--<tpshop sql="SELECT * FROM `__PREFIX__navigation` where is_show = 1 and position = 'top' ORDER BY `sort` DESC" key="k" item='v'>-->
-			<!--<li <?php if($_SERVER['REQUEST_URI']==str_replace('&amp;','&',$v[url])){ echo "class='selected'";}?>>-->
-       			<!--<a href="{$v[url]}" <if condition="$v[is_new] eq 1">target="_blank" </if> >{$v[name]}</a>-->
-       		<!--</li>-->
-			<!--</tpshop>-->
+			<li <if condition=" $Request.controller eq 'Index' ">class="selected"</if>><a href="{:url('/')}">首页</a></li>
+
+			<volist name='navigation' id="vo">
+
+				<li <if condition="$_SERVER['REQUEST_URI'] eq $vo['url']">class="selected"</if>>
+					<a href="{$vo['url']}" <if condition="$vo['is_new'] eq 1">target="_blank" </if>>{$vo.name}</a>
+				</li>
+
+
+			</volist>
+
 		</ul>
 	</div>
 </div>

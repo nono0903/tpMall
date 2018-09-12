@@ -17,7 +17,7 @@ class Base extends Controller
 
     public $session_id;
     public $cateTrre = array();
-    public $U_L_C;
+    public $U_L_C;//User language currency info
 
     /**
      * init
@@ -26,7 +26,6 @@ class Base extends Controller
      */
     public function initialize()
     {
-
 
         if(!cookie('U_L_C')||!cookie('think_var')||!cookie('curr')){
 
@@ -46,7 +45,6 @@ class Base extends Controller
         }else{
             $this->U_L_C = JWT_decode(cookie('U_L_C'));
         }
-
 
         if (input("unique_id")) {           // 兼容手机app
             session_id(input("unique_id"));
@@ -98,6 +96,7 @@ class Base extends Controller
     {
 
         $glob_config = array();
+
         $config = DB::table('config')
             ->cache(true, GlOB_CACHE_TIME)
 //            ->where()
@@ -110,10 +109,17 @@ class Base extends Controller
             $glob_config[$v['inc_type'] . '_' . $v['name']] = $v['value'];
         }
 
-        $goods_category_tree = get_goods_category_tree();
+        $goods_category_tree = get_goods_category_tree($this->U_L_C['data']['lang']);
         $this->cateTrre = $goods_category_tree;
         $this->assign('goods_category_tree', $goods_category_tree);
+
+        $this->assign('navigation', get_hear_navigation($this->U_L_C['data']['lang']));
+
+
+
+
         $brand_list = DB::table('brand')->cache(true)->field('id,name,parent_cat_id,logo,is_hot')->where("parent_cat_id",">","0")->select();
+//        dump($brand_list);
         $this->assign('brand_list', $brand_list);
         $this->assign('tpshop_config', $glob_config);
         $user = session('user');
@@ -126,4 +132,7 @@ class Base extends Controller
         $this->assign('head_pic', "http://{$_SERVER['HTTP_HOST']}/" . $head_pic);
         $this->assign('mobile_url', $mobile_url);
     }
+
+
+
 }

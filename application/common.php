@@ -45,17 +45,24 @@ function isMobile()
 
 
 /**
- * 获取商品分类
- * @return type mix $arr
+ * @param mixed $lang language tags
+ * @return array
+ * Date: 2018/9/12 16:35
+ * Author: Ning <nono0903@gmail.com>
  */
-function get_goods_category_tree(){
-//    echo $_GET['lang'];
-    $tree = $arr = $result = array();
-//    dump($_GET['lang']);
-//    dump($_SERVER['HTTP_ACCEPT_LANGUAGE']);
-//    dump($_COOKIE);
+function get_goods_category_tree($lang = ''){
+    $lang = $lang?$lang:config('default_lang');
+    $result = Cache::get($lang.'category_list');
+    if(!empty($result)) return $result;
 
-    $cat_list = Db::table('goods_category')->cache(true)->where(['is_show' => 1])->order('sort_order')->select();//所有分类
+    $tree = $arr = $result = array();
+
+    $cat_list = Db::table('goods_category')
+        ->where([['is_show','=',1],['lang_tag','=',$lang]])
+        ->order('sort_order')
+        ->field('id,name,level,parent_id,mobile_name')
+        ->select();//所有分类
+
 
     if($cat_list){
         foreach ($cat_list as $val){
@@ -81,9 +88,34 @@ function get_goods_category_tree(){
             $result[$val['id']] = $val;
         }
     }
-//    dump($result);
+    Cache::set($lang.'category_list',$result);
     return $result;
 }
+
+
+
+function get_hear_navigation($lang = ''){
+    $lang = $lang?$lang:config('default_lang');
+    $navigation = Cache::get($lang.'navigation');
+
+    if(empty($navigation)){
+
+        $navigation = Db::table('navigation')
+            ->where([['is_show','=',1],['lang_tag','=',$lang]])
+            ->order('sort DESC')
+            ->field('name,url,is_new')
+            ->select();
+        Cache::set($lang.'navigation',$navigation);
+    }
+   return $navigation;
+
+}
+
+
+function ad(){
+
+}
+
 
 /**
  * 获取缓存或者更新缓存
@@ -191,5 +223,6 @@ function JWT_decode($token){
     return $data;
 
 }
+
 
 
