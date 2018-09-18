@@ -9,6 +9,7 @@
 // | Author: 流年 <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
+
 // 应用公共文件
 function isMobile()
 {
@@ -60,7 +61,7 @@ function get_goods_category_tree($lang = ''){
     $cat_list = Db::table('goods_category')
         ->where([['is_show','=',1],['lang_tag','=',$lang]])
         ->order('sort_order')
-        ->field('id,name,level,parent_id,mobile_name')
+        ->field('id,name,level,parent_id,mobile_name,is_hot')
         ->select();//所有分类
 
 
@@ -93,7 +94,13 @@ function get_goods_category_tree($lang = ''){
 }
 
 
-
+/**
+ * 获取首页导航
+ * @param string $lang
+ * @return mixed
+ * Date: 2018/9/18 18:33
+ * Author: Ning <nono0903@gmail.com>
+ */
 function get_hear_navigation($lang = ''){
     $lang = $lang?$lang:config('default_lang');
     $navigation = Cache::get($lang.'navigation');
@@ -111,10 +118,80 @@ function get_hear_navigation($lang = ''){
 
 }
 
+/**
+ * 获取底部文章导航
+ * @param string $lang
+ * @return array
+ * Date: 2018/9/18 22:29
+ * Author: Ning <nono0903@gmail.com>
+ */
+function getArticle($lang = ''){
+    $lang = $lang?$lang:config('default_lang');
 
-function ad(){
+    $footArticle = Cache::get($lang.'footArticle');
+    if(!$footArticle){
+        $article_data = Db::table('article')
+            ->alias('a')
+            ->leftJoin('article_cat c','a.cat_id=c.cat_id')
+            ->field('a.article_id,a.title,c.cat_name')
+            ->where([['c.lang_tag','=',$lang],['c.show_in_nav','=',1],['a.is_open','=',1]])
+            ->order('c.sort_order,a.sort_order')
+            ->select();
+        $footArticle = [];
+        foreach ($article_data as $v){
+            $footArticle[$v['cat_name']][]=$v;
+        }
+        Cache::set($lang.'footArticle',$footArticle);
+    }
+
+    return $footArticle;
+}
+
+
+
+
+/**
+ * 获取用户当前语言
+ * @return mixed
+ * Date: 2018/9/18 18:33
+ * Author: Ning <nono0903@gmail.com>
+ */
+function getUserLang(){
+    $language = JWT_decode(cookie('U_L_C'))['data']['lang'];
+    $lang = $language ? $language : config('default_lang');
+    return $lang;
+}
+
+
+/**
+ * 获取广告信息
+ * @param $pid 广告位id
+ * @param int $limit
+ * @param string $order
+ * @return mixed
+ * Date: 2018/9/18 18:33
+ * Author: Ning <nono0903@gmail.com>
+ */
+function html_ad($pid,$limit=1,$order='desc'){
+
+    $res = M('ad')
+        ->where([
+            ['lang_tag','=',getUserLang()],
+            ['pid','=',$pid],
+            ['enabled ','=',1],
+            ['start_time','<',strtotime(date('Y-m-d H:00:00'))],
+            ['end_time','>',strtotime(date('Y-m-d H:00:00'))]])
+        ->order('orderby '.$order)
+        ->Cache(true,GlOB_CACHE_TIME)
+        ->limit($limit)
+        ->select();
+
+
+    return $res;
 
 }
+
+
 
 
 /**
@@ -222,6 +299,127 @@ function JWT_decode($token){
 
     return $data;
 
+}
+/**
+ *   实现中文字串截取无乱码的方法
+ */
+function getSubstr($string, $start, $length) {
+    if(mb_strlen($string,'utf-8')>$length){
+        $str = mb_substr($string, $start, $length,'utf-8');
+        return $str.'...';
+    }else{
+        return $string;
+    }
+}
+
+
+/**
+ *  商品缩略图 给于标签调用 拿出商品表的 original_img 原始图来裁切出来的
+ * @param type $goods_id  商品id
+ * @param type $width     生成缩略图的宽度
+ * @param type $height    生成缩略图的高度
+ */
+function goods_thum_images($goods_id, $width, $height)
+{
+    return '';
+    if (empty($goods_id)) return '';
+
+    //判断缩略图是否存在
+    $path = UPLOAD_PATH."goods/thumb/$goods_id/";
+    $goods_thumb_name = "goods_thumb_{$goods_id}_{$width}_{$height}";
+
+    // 这个商品 已经生成过这个比例的图片就直接返回了
+    if (is_file($path . $goods_thumb_name . '.jpg')) return '/' . $path . $goods_thumb_name . '.jpg';
+    if (is_file($path . $goods_thumb_name . '.jpeg')) return '/' . $path . $goods_thumb_name . '.jpeg';
+    if (is_file($path . $goods_thumb_name . '.gif')) return '/' . $path . $goods_thumb_name . '.gif';
+    if (is_file($path . $goods_thumb_name . '.png')) return '/' . $path . $goods_thumb_name . '.png';
+    $original_img = Db::name('goods')->where("goods_id", $goods_id)->cache(true, 30, 'original_img_cache')->value('original_img');
+    if (empty($original_img)) {
+        return '/public/images/icon_goods_thumb_empty_300.png';
+    }
+
+    $ossClient = new \app\common\logic\OssLogic;
+    if (($ossUrl = $ossClient->getGoodsThumbImageUrl($original_img, $width, $height))) {
+        return $ossUrl;
+    }
+
+    $original_img = '.' . $original_img; // 相对路径
+    if (!is_file($original_img)) {
+        return '/public/images/icon_goods_thumb_empty_300.png';
+    }
+
+    try {
+        require_once 'vendor/topthink/think-image/src/Image.php';
+        require_once 'vendor/topthink/think-image/src/image/Exception.php';
+        if(strstr(strtolower($original_img),'.gif'))
+        {
+            require_once 'vendor/topthink/think-image/src/image/gif/Encoder.php';
+            require_once 'vendor/topthink/think-image/src/image/gif/Decoder.php';
+            require_once 'vendor/topthink/think-image/src/image/gif/Gif.php';
+        }
+        $image = \think\Image::open($original_img);
+
+        $goods_thumb_name = $goods_thumb_name . '.' . $image->type();
+        // 生成缩略图
+        !is_dir($path) && mkdir($path, 0777, true);
+        $image->thumb($width, $height, 2)->save($path . $goods_thumb_name, NULL, 100); //按照原图的比例生成一个最大为$width*$height的缩略图并保存
+        $img_url = '/' . $path . $goods_thumb_name;
+
+        return $img_url;
+    } catch (think\Exception $e) {
+
+        return $original_img;
+    }
+}
+
+/**
+ * 商品相册缩略图
+ */
+function get_sub_images($sub_img, $goods_id, $width, $height)
+{
+    //判断缩略图是否存在
+    $path = UPLOAD_PATH."goods/thumb/$goods_id/";
+    $goods_thumb_name = "goods_sub_thumb_{$sub_img['img_id']}_{$width}_{$height}";
+
+    //这个缩略图 已经生成过这个比例的图片就直接返回了
+    if (is_file($path . $goods_thumb_name . '.jpg')) return '/' . $path . $goods_thumb_name . '.jpg';
+    if (is_file($path . $goods_thumb_name . '.jpeg')) return '/' . $path . $goods_thumb_name . '.jpeg';
+    if (is_file($path . $goods_thumb_name . '.gif')) return '/' . $path . $goods_thumb_name . '.gif';
+    if (is_file($path . $goods_thumb_name . '.png')) return '/' . $path . $goods_thumb_name . '.png';
+
+    $ossClient = new \app\common\logic\OssLogic;
+    if (($ossUrl = $ossClient->getGoodsAlbumThumbUrl($sub_img['image_url'], $width, $height))) {
+        return $ossUrl;
+    }
+
+    $original_img = '.' . $sub_img['image_url']; //相对路径
+    if (!is_file($original_img)) {
+        return '/public/images/icon_goods_thumb_empty_300.png';
+    }
+
+    try {
+        require_once 'vendor/topthink/think-image/src/Image.php';
+        require_once 'vendor/topthink/think-image/src/image/Exception.php';
+        if(strstr(strtolower($original_img),'.gif'))
+        {
+            require_once 'vendor/topthink/think-image/src/image/gif/Encoder.php';
+            require_once 'vendor/topthink/think-image/src/image/gif/Decoder.php';
+            require_once 'vendor/topthink/think-image/src/image/gif/Gif.php';
+        }
+        $image = \think\Image::open($original_img);
+
+        $goods_thumb_name = $goods_thumb_name . '.' . $image->type();
+        // 生成缩略图
+        !is_dir($path) && mkdir($path, 0777, true);
+        // 参考文章 http://www.mb5u.com/biancheng/php/php_84533.html  改动参考 http://www.thinkphp.cn/topic/13542.html
+        $image->thumb($width, $height, 2)->save($path . $goods_thumb_name, NULL, 100); //按照原图的比例生成一个最大为$width*$height的缩略图并保存
+        $img_url = '/' . $path . $goods_thumb_name;
+
+        return $img_url;
+    } catch (think\Exception $e) {
+
+        return $original_img;
+    }
 }
 
 

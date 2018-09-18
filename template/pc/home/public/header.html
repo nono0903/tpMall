@@ -233,17 +233,19 @@
 
 							<!--分类广告-->
 							<div class="advertisement_down">
-								<adv pid="10+$kr" item="v3" limit="5">
-								<a href="{$v3['ad_link']}" <if condition="$v3['target'] eq 1">target="_blank"</if>>
-									<img class="w-100" src="{$v3['ad_code']}" title="{$v3['title']}"/>
-								</a>
-								</adv>
+								<volist name=" html_ad($kr+10,5)" id="ad">
+									<a href="{$ad['ad_link']}" <if condition="$ad['target'] eq 1">target="_blank"</if>>
+									<img class="w-100" src="{$ad['ad_code']}"/>
+									</a>
+								</volist>
+
+
 							</div>
-							<adv item="az" pid="51" limit="1">
-							<a href="{$az['ad_link']}" class="cata-nav-rigth" <if condition="$az['target'] eq 1">target="_blank"</if>>
-								<img class="w-100" src="{$az['ad_code']}" title="{$az['title']}" />
-							</a>
-							</adv>
+							<volist name=" html_ad(51)" id="ad">
+								<a href="{$ad['ad_link']}" class="cata-nav-rigth" <if condition="$ad['target'] eq 1">target="_blank"</if>>
+								<img class="w-100" src="{$ad['ad_code']}"/>
+								</a>
+							</volist>
 							</div>
 					</div>
 				</volist>
@@ -267,7 +269,6 @@
 				<li <if condition="$_SERVER['REQUEST_URI'] eq $vo['url']">class="selected"</if>>
 					<a href="{$vo['url']}" <if condition="$vo['is_new'] eq 1">target="_blank" </if>>{$vo.name}</a>
 				</li>
-
 
 			</volist>
 

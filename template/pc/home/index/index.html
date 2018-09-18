@@ -17,12 +17,15 @@
 <!--header-e-->
 <div id="myCarousel" class="carousel clearfix">
 	<ul class="carousel-inner">
-        <adv pid="2" item="v1" limit="5">
-		<li class="item" style="background:{$v1.bgcolor};">
-			<a class="item-pic" href="{$v1[ad_link]}" <if condition="$v1['target'] eq 1">target="_blank"</if>>
-			<img class="w-100" src="{$v1[ad_code]}" title="{$v1[title]}" alt="{$v1[title]}"></a>
-		</li>
-		</adv>
+
+		<volist name=" html_ad(2,5)" id="ad">
+			<li class="item" style="background:{$ad.bgcolor};">
+				<a class="item-pic" href="{$ad['ad_link']}" <if condition="$ad['target'] eq 1">target="_blank"</if>>
+				<img class="w-100" src="{$ad['ad_code']}" title="{$ad['ad_name']}" alt="{$ad['ad_name']} "/>
+			</a>
+			</li>
+		</volist>
+
 	</ul>
 	<div class="pagination">
 
@@ -116,52 +119,66 @@
 		})
 	</script>
 	<div class="banner-right-box">
-	<adv item="vb" pid="52" limit="2">
-		<a class="banner-right-item t-all" href="{$vb[ad_link]}"><img src="{$vb[ad_code]}" alt="{$vb[title]}" /></a>
-	</adv>
+	<volist name=" html_ad(52,2)" id="ad">
+			<a class="banner-right-item t-all" href="{$ad['ad_link']}" <if condition="$ad['target'] eq 1">target="_blank"</if>>
+			<img src="{$ad['ad_code']}"  alt="{$ad['ad_name']} "/>
+			</a>
+
+	</volist>
+
 	</div>
 </div>
 
 <div class="adv3 w1224 clearfix">
-	<adv item="vr" pid="50" limit="3">
-	<a class="recommend-brand t-all" href="{$vr[ad_link]}">
-		<img class="w-100" src="{$vr[ad_code]}" alt="{$vr[title]}" title="{$vr[title]}"/>
-	</a>
-	</adv>
+
+	<volist name=" html_ad(50,3)" id="vr">
+		<a class="recommend-brand t-all" href="{$vr.ad_link}">
+			<img class="w-100" src="{$vr.ad_code}" alt="{$vr.ad_name}" title="{$vr.ad_name}"/>
+		</a>
+	</volist>
+
+
 </div>
 
-<adv item="v5" pid="49" limit="1">
-	<a href="{$v5[ad_link]}" class="adver_line">
-		<img class="w-100" src="{$v5[ad_code]}" alt="{$v5[title]}"/>
+
+<volist name=" html_ad(49,1)" id="ad49">
+
+	<a href="{$ad49.ad_link}" class="adver_line">
+		<img class="w-100" src="{$ad49.ad_code}" alt="{$ad49.ad_name}"/>
 	</a>
-</adv>
+
+</volist>
+
 
 <foreach name="cateList" item="v" key="k">
 <div class="floor floor{$k+1} w1224">
 	<div class="floor-top">
-		<h3 class="floor-title">{$v[name]}</h3>
+		<h3 class="floor-title">{$v.name}</h3>
 		<div class="floor-nav-list clearfix">
-			<foreach name="v[tmenu]" item="v2" key="k2">
-			<a class="floor-nav-item" href="{:url('Home/Goods/goodsList',array('id'=>$v2[id]))}">{$v2[name]}</a>
+			<foreach name="v.tmenu" item="v2" key="k2">
+			<a class="floor-nav-item" href="{:url('Home/Goods/goodsList',array('id'=>$v2.id))}">{$v2.name}</a>
 			</foreach>
 		</div>
-		<a class="nav-more-btn" href="{:url('Home/Goods/goodsList',array('id'=>$v[id]))}">更多<i>></i></a>
+		<a class="nav-more-btn" href="{:url('Home/Goods/goodsList',array('id'=>$v.id))}">更多<i>></i></a>
 	</div>
 	<div class="floor-main">
 		<div class="floor-brand">
-			<adv item="vl" pid="10+$k" limit="1">
-			<a class="brand-big" href="{$vl[ad_link]}"><img class="w-100" src="{$vl[ad_code]}" alt="{$vl[title]}" /></a>
-			</adv>
-			<adv item="vs" pid="20+$k" limit="1">
-			<a class="brand-samll" href="{$vs[ad_link]}"><img class="w-100" src="{$vs[ad_code]}" alt="{$vs[title]}" /></a>
-			</adv>
+
+			<volist name=" html_ad(10+$k,1)" id="adv">
+				<a class="brand-big" href="{$adv.ad_link}"><img class="w-100" src="{$adv.ad_code}" alt="{$adv.ad_name}" /></a>
+			</volist>
+
+			<volist name=" html_ad(20+$k,1)" id="adv">
+				<a class="brand-samll" href="{$adv.ad_link}"><img class="w-100" src="{$adv.ad_code}" alt="{$adv.ad_name}" /></a>
+			</volist>
+			
 		</div>
 		<div class="floor-goods-list">
-			<foreach name="v[hot_goods]" item="g" key="gk">
-			<a class="floor-goods-item" href="{:url('Home/Goods/goodsInfo',array('id'=>$g[goods_id]))}">
-				<div class="googs-title ellipsis-1">{$g[goods_name]|getSubstr=0,20}</div>
-				<div class="googs-price ellipsis-1">￥{$g[shop_price]}</div>
-				<div class="goods-pic"><img class="w-100" src="{$g[goods_id]|goods_thum_images=400,400}" alt=""></div>
+			<foreach name="v.hot_goods" item="g" key="gk">
+			<a class="floor-goods-item" href="{:url('Home/Goods/goodsInfo',array('id'=>$g.goods_id))}">
+				<div class="googs-title ellipsis-1">{$g.goods_name|getSubstr=0,20}</div>
+				<div class="googs-price ellipsis-1">￥{$g.shop_price}</div>
+				<div class="goods-pic"><img class="w-100" src="{$g.goods_id|goods_thum_images=400,400}" alt=""></div>
 			</a>
 			</foreach>
 		</div>
@@ -169,21 +186,21 @@
 			<div class="floor-recommend-title">热门推荐</div>
 			<div class="floor-recommend-wrap">
 				<div class="floor-recommend-list">
-					<foreach name="v[recommend_goods]" item="rg" key="gk">
-					<a class="floor-recommend-item" href="{:url('Home/Goods/goodsInfo',array('id'=>$rg[goods_id]))}">
+					<foreach name="v.recommend_goods" item="rg" key="gk">
+					<a class="floor-recommend-item" href="{:url('Home/Goods/goodsInfo',array('id'=>$rg.goods_id))}">
 						<div class="floor-recommend-pic">
-							<img class="w-100" src="{$rg[goods_id]|goods_thum_images=200,200}" alt="" />
+							<img class="w-100" src="{$rg.goods_id|goods_thum_images=200,200}" alt="" />
 						</div>
 						<div class="floor-recommend-cont">
-							<div class="recommend-goods-name ellipsis-1">{$rg[goods_name]|getSubstr=0,15}</div>
-							<div class="recommend-goods-des ellipsis-1">{$rg[goods_remark]}</div>
-							<div class="recommend-goods-price  recommend-goods-des">￥ {$rg[shop_price]}</div>
+							<div class="recommend-goods-name ellipsis-1">{$rg.goods_name|getSubstr=0,15}</div>
+							<div class="recommend-goods-des ellipsis-1">{$rg.goods_remark}</div>
+							<div class="recommend-goods-price  recommend-goods-des">￥ {$rg.shop_price}</div>
 						</div>
 					</a>
 					</foreach>
 				</div>
 			</div>
-			<a class="recommend-more-btn" href="{:url('Home/Goods/goodsList',array('id'=>$v[id]))}">更多 <i>></i></a>
+			<a class="recommend-more-btn" href="{:url('Home/Goods/goodsList',array('id'=>$v.id))}">更多 <i>></i></a>
 		</div>
 	</div>
 </div>
@@ -203,7 +220,7 @@
 <!--楼层导航-e-->
 <!--侧边栏-s-->
 <div class="slidebar-right">
-	<a class="slidebar-item ico-slidebar1" target="_blank" href="tencent://message/?uin={$tpshop_config['shop_info_qq2']}&amp;Site=TPshop商城&amp;Menu=yes" >
+	<a class="slidebar-item ico-slidebar1" target="_blank" href="tencent://message/?uin={$tpshop_config['shop_info_qq2']}&amp;Site={$tpshop_config['shop_info_store_name']}&amp;Menu=yes" >
 		<div class="sbar-hover-txt">客服服务</div>
 	</a>
 	<a class="slidebar-item ico-slidebar2" target="_blank" href="javascript:;" >
@@ -213,13 +230,13 @@
 			<p class="qrcode-des">扫码关注官方微信,先人一步知晓促销活动</p>
 		</div>
 	</a>
-	<a class="slidebar-item ico-slidebar3" target="_blank" href="javascript:;" >
-		<div class="sbar-hover-txt">手机商城</div>
-		<div class="sbar-hover-pic">
-			<div class="qrcode-wrap"><img class="w-100" src="/index.php?m=Home&c=Index&a=qr_code&data={$mobile_url}&head_pic={$head_pic}&back_img={$back_img}" alt="" /></div>
-			<p class="qrcode-des">扫码下载手机商城,随时随地享受优惠购物</p>
-		</div>
-	</a>
+	<!--<a class="slidebar-item ico-slidebar3" target="_blank" href="javascript:;" >-->
+		<!--<div class="sbar-hover-txt">手机商城</div>-->
+		<!--<div class="sbar-hover-pic">-->
+			<!--<div class="qrcode-wrap"><img class="w-100" src="/index.php?m=Home&c=Index&a=qr_code&data={$mobile_url}&head_pic={$head_pic}" alt="" /></div>-->
+			<!--<p class="qrcode-des"></p>-->
+		<!--</div>-->
+	<!--</a>-->
 	<a class="slidebar-item ico-slidebar4 t-all" target="_blank" href="javascript:;" >
 		<div class="sbar-hover-txt">回到顶部</div>
 	</a>

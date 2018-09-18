@@ -45,7 +45,7 @@ return [
     // 默认语言
     'default_lang'           => 'zh-cn',
     //语种列表
-    'lang_list'           => ['zh-cn','en-us'],
+    'lang_list'           => ['zh-cn','en-us','ko-kr','zh-tw'],
     // 应用类库后缀
     'class_suffix'           => false,
     // 控制器类后缀
